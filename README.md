@@ -19,18 +19,17 @@ Install and setup Arch Linux.
     ```
     - Initiate scan for networks:
     ```
-    iwctl station NAME scan
+    iwctl station DEVICE_NAME scan
     ```
     - Get list of available networks and their SSID:
     ```
-    iwctl station NAME get-networks
+    iwctl station DEVICE_NAME get-networks
     ```
     - Connect to a network:
     ```
-    iwctl station NAME connect SSID
+    iwctl station DEVICE_NAME connect NETWORK_SSID
     ```
     - Verify connection:
     ```
     ping archlinux.org
     ```
-

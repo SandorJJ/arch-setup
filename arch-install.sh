@@ -60,13 +60,13 @@ confirm
 echo -e "\nFormatting disk:"
 sgdisk /dev/$disk -o
 echo -e "\nCreating EFI system partition:"
-sgdisk /dev/$disk -n 0:0:+"$efi"G
+sgdisk /dev/$disk -n 0:0:+"$efi"GiB
 sgdisk /dev/$disk -t 1:EF00
 echo -e "\nCreating swap partition:"
-sgdisk /dev/$disk -n 0:0:+"$swap"G
+sgdisk /dev/$disk -n 0:0:+"$swap"GiB
 sgdisk /dev/$disk -t 2:8200
 echo -e "\nCreating root partition:"
-sgdisk /dev/$disk -n 0:0:+"$root"G
+sgdisk /dev/$disk -n 0:0:+"$root"
 
 echo ""
 lsblk

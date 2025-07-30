@@ -61,8 +61,10 @@ echo -e "\nFormatting disk:"
 sgdisk /dev/$disk -o
 echo -e "\nCreating EFI system partition:"
 sgdisk /dev/$disk -n 0:0:+"$efi"G
+sgdisk /dev/$disk -t 1:EF00
 echo -e "\nCreating swap partition:"
 sgdisk /dev/$disk -n 0:0:+"$swap"G
+sgdisk /dev/$disk -t 2:8200
 echo -e "\nCreating root partition:"
 sgdisk /dev/$disk -n 0:0:+"$root"G
 
@@ -75,6 +77,7 @@ echo -e "\nWhat is the name of the swap partition?"
 read swap_name
 echo -e "\nWhat is the name of the root partition?"
 read root_name
+
 
 echo -e "\nFormatting EFI system partition:"
 mkfs.fat -F 32 /dev/$efi_name
@@ -96,7 +99,7 @@ reflector --country Canada --latest 50 --protocol http,https --sort rate --save 
 echo -e "\nInstalling essential system packages:"
 pacstrap -K /mnt base linux linux-firmware amd-ucode NetworkManager
 echo -e "\nInstalling essential utility packages:"
-pacstrap -K /mnt nmtui vim man-db
+pacstrap -K /mnt vim git nmtui man-db reflector
 
 echo -e "\nGenerating fstab file:"
 genfstab -U /mnt >> /mnt/etc/fstab
@@ -118,6 +121,7 @@ hwclock --systohc
 
 echo -e "\nSetting localization:"
 locale-gen
+sed -i "s/#en_US/en_US/g" /etc/locale.gen
 echo "LANG=en_US.UTF-8" >> /etc/locale.conf
 
 echo -e "\nWhat should the device's hostname be?"
@@ -126,5 +130,25 @@ read hostname
 echo -e "\nSetting hostname:"
 echo "$hostname" >> /etc/hostname
 
+echo -e "\nSet root password:"
+passwd
+
+echo -e "\nAdding user:"
+echo -e "What should the user's username be?"
+read username
+useradd -m -G wheel $username
+passwd $username
+
 echo -e "\nEnabling NetworkManager on startup:"
 systemctl enable NetworkManager
+
+echo -e "\nSetting up bootloader (GRUB):"
+pacman -S grub efibootmgr
+grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB
+grub-mkconfig -o /boot/grub/grub.cfg
+
+echo -e "\nExiting from new system:"
+exit
+unmount -R /mnt
+
+echo -e "\nReady to reboot (pull out USB)!"

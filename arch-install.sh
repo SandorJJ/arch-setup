@@ -78,9 +78,6 @@ read swap_name
 echo -e "\nWhat is the name of the root partition?"
 read root_name
 
-echo "stop"
-read asd
-
 echo -e "\nFormatting EFI system partition:"
 mkfs.fat -F 32 /dev/"$efi_name"
 echo -e "\nFormatting swap partition:"
@@ -100,14 +97,12 @@ reflector --country Canada --latest 5 --protocol http,https --sort rate --save /
 
 echo -e "\nInstalling essential system packages:"
 pacstrap -K /mnt base linux linux-firmware 
-# echo -e "\nInstalling important utility packages:"
-# pacstrap -K /mnt vim git networkmanager nmtui amd-ucode man-db reflector
+echo -e "\nInstalling important utility packages:"
+pacstrap -K /mnt vim git networkmanager nmtui amd-ucode man-db reflector
 
 echo -e "\nGenerating fstab file:"
 genfstab -U /mnt >> /mnt/etc/fstab
 cat /mnt/etc/fstab
-
-exit 111
 
 echo -e "\nChanging root into the new system:"
 arch-chroot /mnt

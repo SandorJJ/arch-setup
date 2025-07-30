@@ -88,22 +88,18 @@ mkswap /dev/"$swap_name"
 echo -e "\nFormatting root partition:"
 mkfs.ext4 /dev/"$root_name"
 
-echo "stop"
-read asd
-
 echo -e "\nMounting EFI system partition:"
-mkdir /mnt/boot
-mount /dev/"$efi_name" /mnt/boot
+# mount /dev/"$efi_name" /mnt/boot
+mount --mkdir /dev/sda1 /mnt/boot
 echo -e "\nEnabling swap partition:"
-swapon /dev/"$swap_name"
+# swapon /dev/"$swap_name"
+swapon /dev/sda2
 echo -e "\nMounting root partition:"
-mount /dev/"$root_name" /mnt
-
-echo "stop"
-read asd
+# mount /dev/"$root_name" /mnt
+mount /dev/sda3 /mnt
 
 echo -e "\nCreating mirrorlist for downloads:"
-reflector --country Canada --latest 10 --protocol http,https --sort rate --save /etc/pacman.d/mirrorlist
+reflector --country Canada --latest 5 --protocol http,https --sort rate --save /etc/pacman.d/mirrorlist
 
 echo -e "\nInstalling essential system packages:"
 pacstrap -K /mnt base linux linux-firmware 

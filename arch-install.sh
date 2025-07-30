@@ -95,12 +95,14 @@ echo -e "\nMounting root partition:"
 mount /dev/"$root_name" /mnt
 
 echo -e "\nCreating mirrorlist for downloads:"
-reflector --country Canada --latest 50 --protocol http,https --sort rate --save /etc/pacman.d/mirrorlist
+reflector --country Canada --latest 25 --protocol http,https --sort rate --save /etc/pacman.d/mirrorlist
 
 echo -e "\nInstalling essential system packages:"
-pacstrap -K /mnt base linux linux-firmware amd-ucode NetworkManager
-echo -e "\nInstalling essential utility packages:"
-pacstrap -K /mnt vim git nmtui man-db reflector
+pacstrap -K /mnt base linux linux-firmware amd-ucode
+echo -e "\nTEMP"
+read asdasd
+echo -e "\nInstalling important utility packages:"
+pacstrap -K /mnt vim git networkmanager nmtui man-db reflector
 
 echo -e "\nGenerating fstab file:"
 genfstab -U /mnt >> /mnt/etc/fstab

@@ -88,15 +88,12 @@ mkswap /dev/"$swap_name"
 echo -e "\nFormatting root partition:"
 mkfs.ext4 /dev/"$root_name"
 
-echo -e "\nMounting EFI system partition:"
-# mount /dev/"$efi_name" /mnt/boot
-mount --mkdir /dev/sda1 /mnt/boot
-echo -e "\nEnabling swap partition:"
-# swapon /dev/"$swap_name"
-swapon /dev/sda2
 echo -e "\nMounting root partition:"
-# mount /dev/"$root_name" /mnt
-mount /dev/sda3 /mnt
+mount /dev/"$root_name" /mnt
+echo -e "\nMounting EFI system partition:"
+mount --mkdir /dev/"$efi_name" /mnt/boot
+echo -e "\nEnabling swap partition:"
+swapon /dev/"$swap_name"
 
 echo -e "\nCreating mirrorlist for downloads:"
 reflector --country Canada --latest 5 --protocol http,https --sort rate --save /etc/pacman.d/mirrorlist

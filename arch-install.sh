@@ -78,6 +78,8 @@ read swap_name
 echo -e "\nWhat is the name of the root partition?"
 read root_name
 
+echo "stop"
+read asd
 
 echo -e "\nFormatting EFI system partition:"
 mkfs.fat -F 32 /dev/"$efi_name"
@@ -85,6 +87,9 @@ echo -e "\nFormatting swap partition:"
 mkswap /dev/"$swap_name"
 echo -e "\nFormatting root partition:"
 mkfs.ext4 /dev/"$root_name"
+
+echo "stop"
+read asd
 
 echo -e "\nMounting EFI system partition:"
 mkdir /mnt/boot
@@ -94,21 +99,22 @@ swapon /dev/"$swap_name"
 echo -e "\nMounting root partition:"
 mount /dev/"$root_name" /mnt
 
+echo "stop"
+read asd
+
 echo -e "\nCreating mirrorlist for downloads:"
-reflector --country Canada --latest 25 --protocol http,https --sort rate --save /etc/pacman.d/mirrorlist
+reflector --country Canada --latest 10 --protocol http,https --sort rate --save /etc/pacman.d/mirrorlist
 
 echo -e "\nInstalling essential system packages:"
-pacstrap -K /mnt base linux linux-firmware amd-ucode
-echo -e "\nTEMP"
-read asdasd
-echo -e "\nInstalling important utility packages:"
-pacstrap -K /mnt vim git networkmanager nmtui man-db reflector
+pacstrap -K /mnt base linux linux-firmware 
+# echo -e "\nInstalling important utility packages:"
+# pacstrap -K /mnt vim git networkmanager nmtui amd-ucode man-db reflector
 
 echo -e "\nGenerating fstab file:"
 genfstab -U /mnt >> /mnt/etc/fstab
 cat /mnt/etc/fstab
-echo "Continue?"
-read temp
+
+exit 111
 
 echo -e "\nChanging root into the new system:"
 arch-chroot /mnt

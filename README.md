@@ -1,9 +1,6 @@
 # Arch Setup
 Install and setup Arch Linux.
 
-## Disclaimer
-**The installation script only supports BIOS boot mode.**
-
 ## Prerequisits
 - A tool, such as [Rufus](rufus.ie/en/), to create USB installation medium.
 - Disable Secure Boot on machine.
@@ -33,3 +30,8 @@ Install and setup Arch Linux.
     ```
     ping archlinux.org
     ```
+
+## Usage
+```
+curl -LO https://github.com/SandorJJ/arch-setup/raw/refs/heads/main/arch-install.sh
+```

@@ -87,7 +87,8 @@ echo -e "\nFormatting root partition:"
 mkfs.ext4 /dev/"$root_name"
 
 echo -e "\nMounting EFI system partition:"
-mount --mkdir /dev/"$efi_name /mnt/boot"
+mkdir /mnt/boot
+mount /dev/"$efi_name" /mnt/boot
 echo -e "\nEnabling swap partition:"
 swapon /dev/"$swap_name"
 echo -e "\nMounting root partition:"

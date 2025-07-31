@@ -104,9 +104,6 @@ echo -e "\nGenerating fstab file:"
 genfstab -U /mnt >> /mnt/etc/fstab
 cat /mnt/etc/fstab
 
-echo -e "\nChanging root into the new system:"
-arch-chroot /mnt
-
 echo -e "\nWhat country are you in?"
 read country
 echo -e "\nWhat timezone are you in?"
@@ -132,22 +129,12 @@ echo -e "TESTING THIS HIT ENTER"
 read test
 arch-chroot /mnt passwd
 
-echo -e "\nAdding user:"
-echo -e "What should the user's username be?"
-read username
-arch-chroot /mnt useradd -m -G wheel "$username"
-arch-chroot /mnt passwd "$username"
-
-echo -e "\nEnabling NetworkManager on startup:"
-arch-chroot /mnt systemctl enable NetworkManager
-
 echo -e "\nSetting up bootloader (GRUB):"
-arch-chroot /mnt pacman -S grub efibootmgr
-arch-chroot /mnt grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB
-arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
+echo "pacman -S grub efibootmgr" | arch-chroot /mnt
+echo "grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB" | arch-chroot /mnt
+echo "grub-mkconfig -o /boot/grub/grub.cfg" | arch-chroot /mnt
 
 echo -e "\nExiting from new system:"
-exit
 unmount -R /mnt
 
 echo -e "\nReady to reboot (pull out USB)!"

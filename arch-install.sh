@@ -132,6 +132,6 @@ arch-chroot /mnt pacman -S grub efibootmgr
 arch-chroot /mnt grub-install --target=x86_64-efi --efi-directory=/boot/ --bootloader-id=GRUB
 arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
 
-unmount -R /mnt
+umount -R /mnt
 
 echo -e "\nReady to reboot (pull out USB)!"

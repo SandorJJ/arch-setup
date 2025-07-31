@@ -113,36 +113,38 @@ echo -e "\nWhat timezone are you in?"
 read timezone
 
 echo -e "\nSetting time:"
-ln -sf /usr/share/zoneinfo/"$country"/"$timezone" /etc/localtime
-hwclock --systohc
+arch-chroot /mnt ln -sf /usr/share/zoneinfo/"$country"/"$timezone" /etc/localtime
+arch-chroot /mnt hwclock --systohc
 
 echo -e "\nSetting localization:"
-locale-gen
-sed -i "s/#en_US/en_US/g" /etc/locale.gen
-echo "LANG=en_US.UTF-8" >> /etc/locale.conf
+arch-chroot /mnt locale-gen
+arch-chroot /mnt sed -i "s/#en_CA/en_CA/g" /etc/locale.gen
+arch-chroot /mnt echo "LANG=en_CA.UTF-8" >> /etc/locale.conf
 
 echo -e "\nWhat should the device's hostname be?"
 read hostname
 
 echo -e "\nSetting hostname:"
-echo "$hostname" >> /etc/hostname
+arch-chroot /mnt echo "$hostname" >> /etc/hostname
 
 echo -e "\nSet root password:"
-passwd
+echo -e "TESTING THIS HIT ENTER"
+read test
+arch-chroot /mnt passwd
 
 echo -e "\nAdding user:"
 echo -e "What should the user's username be?"
 read username
-useradd -m -G wheel "$username"
-passwd "$username"
+arch-chroot /mnt useradd -m -G wheel "$username"
+arch-chroot /mnt passwd "$username"
 
 echo -e "\nEnabling NetworkManager on startup:"
-systemctl enable NetworkManager
+arch-chroot /mnt systemctl enable NetworkManager
 
 echo -e "\nSetting up bootloader (GRUB):"
-pacman -S grub efibootmgr
-grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB
-grub-mkconfig -o /boot/grub/grub.cfg
+arch-chroot /mnt pacman -S grub efibootmgr
+arch-chroot /mnt grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB
+arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
 
 echo -e "\nExiting from new system:"
 exit

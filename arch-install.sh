@@ -125,16 +125,16 @@ echo -e "\nSetting hostname:"
 arch-chroot /mnt echo "$hostname" >> /etc/hostname
 
 echo -e "\nSet root password:"
-echo -e "TESTING THIS HIT ENTER"
-read test
 arch-chroot /mnt passwd
 
 echo -e "\nSetting up bootloader (GRUB):"
-echo "pacman -S grub efibootmgr" | arch-chroot /mnt
-echo "grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB" | arch-chroot /mnt
-echo "grub-mkconfig -o /boot/grub/grub.cfg" | arch-chroot /mnt
+arch-chroot /mnt /bin/bash -e <<EOF
+pacman -S grub efibootmgr
+grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB
+grub-mkconfig -o /boot/grub/grub.cfg
 
-echo -e "\nExiting from new system:"
+EOF
+
 unmount -R /mnt
 
 echo -e "\nReady to reboot (pull out USB)!"

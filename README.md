@@ -1,8 +1,12 @@
 # Arch Setup
 Install and setup Arch Linux.
 
+## Disclaimer
+The scripts found in this repository are meant to setup Arch Linux how I like it and were not created with the intention to be used by others.
+If you do wish to use the scripts, make sure you understand what they do before you run them. In other words, use at your own risk!
+
 ## Prerequisits
-- A tool, such as [Rufus](rufus.ie/en/), to create USB installation medium.
+- A tool, such as [Rufus](rufus.ie/en/), to create a USB installation medium.
 - Disable Secure Boot on machine.
 
 ## Pre-Installation

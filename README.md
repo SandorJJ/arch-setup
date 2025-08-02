@@ -36,6 +36,13 @@ If you do wish to use the scripts, make sure you understand what they do before 
     ```
 
 ## Usage
-```
-curl -LO https://github.com/SandorJJ/arch-setup/raw/refs/heads/main/arch-install.sh
-```
+1. Install Arch Linux
+    - Download arch-install.sh script:
+    ```
+    curl -LO https://github.com/SandorJJ/arch-setup/raw/refs/heads/main/arch-install.sh
+    ```
+    - Run arch-install.sh script:
+    ```
+    sh arch-install.sh
+    ```
+    - Follow prompts

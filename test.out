@@ -1,0 +1,6 @@
+test.sh: line 186: sgdisk: command not found
+test.sh: line 189: sgdisk: command not found
+test.sh: line 190: sgdisk: command not found
+test.sh: line 192: sgdisk: command not found
+test.sh: line 199: sgdisk: command not found
+test.sh: line 200: sgdisk: command not found

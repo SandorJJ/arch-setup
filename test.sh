@@ -56,7 +56,7 @@ print_percentage() {
     done
     bar="${bar}] (${percentage}%)"
 
-    printf "\r\2[2K"
+    printf "\r\e[2K"
     printf "${GREEN}%s - %s${RESET}\r" "${bar}" "${action}"
 
     if [[ "${percentage}" == 100 ]]; then

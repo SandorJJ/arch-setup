@@ -122,7 +122,7 @@ swap_size=""
 root_size=""
 while :
 do
-    print_info "How should the disk be partitioned?" "Default: " "EFI system partition    ${DEFAULT_EFI_PARTITION_SIZE} GiB" "swap partition          ${DEFAULT_SWAP_PARTITION_SIZE} GiB" "root partition          remainder GiB"
+    print_info "How should the disk be partitioned?" "Default: " "EFI system partition    ${DEFAULT_EFI_PARTITION_SIZE} GiB" "swap partition          ${DEFAULT_SWAP_PARTITION_SIZE} GiB" "root partition          remaining GiB"
     read_input "[enter] for default / [c]ustom"
     if [[ "${input}" == "" ]]; then
         efi_size="${DEFAULT_EFI_PARTITION_SIZE}"
@@ -251,20 +251,20 @@ do
 done
 
 print_percentage 10 "Formatting disk"
-sgdisk /dev/"${disk_name}" -o
+sgdisk /dev/"${disk_name}" -o &> test.out
 
 print_percentage 20 "Partitioning disk"
-sgdisk /dev/"${disk_name}" -n 0:0:+"${efi_size}"GiB
-sgdisk /dev/"${disk_name}" -n 0:0:+"${swap_size}"GiB
+sgdisk /dev/"${disk_name}" -n 0:0:+"${efi_size}"GiB &>> test.out
+sgdisk /dev/"${disk_name}" -n 0:0:+"${swap_size}"GiB &>> test.out
 if [[ "${root_size}" == 0 ]]; then
-    sgdisk /dev/"${disk_name}" -n 0:0:+"${root_size}"
+    sgdisk /dev/"${disk_name}" -n 0:0:+"${root_size}" &>> test.out
 else
-    sgdisk /dev/"${disk_name}" -n 0:0:+"${root_size}"GiB
+    sgdisk /dev/"${disk_name}" -n 0:0:+"${root_size}"GiB &>> test.out
 fi
 
 print_percentage 25 "Changing disk type"
-sgdisk /dev/"${disk_name}" -t 1:EF00
-sgdisk /dev/"${disk_name}" -t 2:8200
+sgdisk /dev/"${disk_name}" -t 1:EF00 &>> test.out
+sgdisk /dev/"${disk_name}" -t 2:8200 &>> test.out
 
 efi_name=""
 swap_name=""
@@ -281,48 +281,48 @@ elif [[ "${disk_name}" =~ ^nvme[0-9]n[0-9]$ ]]; then
 fi
 
 print_percentage 30 "Formatting partitions"
-mkfs.fat -F 32 /dev/"${efi_name}"
-mkswap /dev/"${swap_name}"
-mkfs.ext4 /dev/"${root_name}"
+mkfs.fat -F 32 /dev/"${efi_name}" &>> test.out
+mkswap /dev/"${swap_name}" &>> test.out
+mkfs.ext4 /dev/"${root_name}" &>> test.out
 
 print_percentage 40 "Mounting partitions"
-mount /dev/"${root_name}" /mnt
-mount --mkdir /dev/"${efi_name}" /mnt/boot
-swapon /dev/"${swap_name}"
+mount /dev/"${root_name}" /mnt &>> test.out
+mount --mkdir /dev/"${efi_name}" /mnt/boot &>> test.out
+swapon /dev/"${swap_name}" &>> test.out
 
 print_percentage 50 "Creating mirrorlist"
-reflector --country Canada --latest 10 --protocol http,https --sort rate --save /etc/pacman.d/mirrorlist 
+reflector --country Canada --latest 10 --protocol http,https --sort rate --save /etc/pacman.d/mirrorlist  &>> test.out
 
 print_percentage 60 "Installing essential system packages (may take a while)"
-pacstrap -K /mnt base linux linux-firmware networkmanager amd-ucode
+pacstrap -K /mnt base linux linux-firmware networkmanager amd-ucode &>> test.out
 
 print_percentage 75 "Generating fstab file"
-genfstab -U /mnt >> /mnt/etc/fstab
+genfstab -U /mnt >> /mnt/etc/fstab &>> test.out
 
 print_percentage 80 "Setting time and localization"
-arch-chroot /mnt ln -sf /usr/share/zoneinfo/"$(curl -s http://ip-api.com/line?fields=timezone)" /etc/localtime
-arch-chroot /mnt hwclock --systohc
+arch-chroot /mnt ln -sf /usr/share/zoneinfo/"$(curl -s http://ip-api.com/line?fields=timezone)" /etc/localtime &>> test.out
+arch-chroot /mnt hwclock --systohc &>> test.out
 
-arch-chroot /mnt locale-gen
-arch-chroot /mnt sed -i "s/#en_CA/en_CA/g" /etc/locale.gen
-arch-chroot /mnt echo "LANG=en_CA.UTF-8" >> /etc/locale.conf
+arch-chroot /mnt locale-gen &>> test.out
+arch-chroot /mnt sed -i "s/#en_CA/en_CA/g" /etc/locale.gen &>> test.out
+arch-chroot /mnt echo "LANG=en_CA.UTF-8" >> /etc/locale.conf &>> test.out
 
 print_percentage 85 "Setting device name, root password, and generating user"
-arch-chroot /mnt echo "${device_name}" >> /etc/hostname
-echo "root:${root_password}" | arch-chroot /mnt chpasswd
-arch-chroot /mnt useradd -m -G wheel "${user_name}"
-echo "${user_name}:${user_password}" | arch-chroot /mnt chpasswd
+arch-chroot /mnt echo "${device_name}" >> /etc/hostname &>> test.out
+echo "root:${root_password}" | arch-chroot /mnt chpasswd &>> test.out
+arch-chroot /mnt useradd -m -G wheel "${user_name}" &>> test.out
+echo "${user_name}:${user_password}" | arch-chroot /mnt chpasswd &>> test.out
 
 print_percentage 91 "Enabling networkmanager"
-arch-chroot /mnt systemctl enable NetworkManager
+arch-chroot /mnt systemctl enable NetworkManager &>> test.out
 
 print_percentage 90 "Installing and setting up bootloader"
-arch-chroot /mnt pacman -S grub efibootmgr
-arch-chroot /mnt grub-install --target=x86_64-efi --efi-directory=/boot/ --bootloader-id=GRUB
-arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
+arch-chroot /mnt pacman -S grub efibootmgr &>> test.out
+arch-chroot /mnt grub-install --target=x86_64-efi --efi-directory=/boot/ --bootloader-id=GRUB &>> test.out
+arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg &>> test.out
 
 print_percentage 95 "Unmounting partitions"
-umount -R /mnt
+umount -R /mnt &>> test.out
 
 print_percentage 100 "Arch installation complete (reboot and remove ISO)"
 printf "\n"

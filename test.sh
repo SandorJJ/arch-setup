@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 clear
+set -e
 
 # TODO: SUDO PERMISSION
 # TODO: ENCRYPTION
@@ -306,9 +307,9 @@ arch-chroot /mnt echo "LANG=en_CA.UTF-8" >> /etc/locale.conf
 
 print_percentage 85 "Setting device name, root password, and generating user"
 arch-chroot /mnt echo "${device_name}" >> /etc/hostname
-arch-chroot /mnt printf "${root_password}\n${root_password}" | passwd
+echo "root:${root_password}" | arch-chroot /mnt chpasswd
 arch-chroot /mnt useradd -m -G wheel "${user_name}"
-arch-chroot /mnt printf "${user_password}\n${user_password}" | passwd
+echo "${user_name}:${user_password}" | arch-chroot /mnt chpasswd
 
 print_percentage 91 "Enabling networkmanager"
 arch-chroot /mnt systemctl enable NetworkManager

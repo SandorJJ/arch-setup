@@ -1,137 +1,330 @@
 #!/usr/bin/env bash
-confirm () {
-    echo "(y)es or (n)o"
-    read input
 
-    if [[ "$input" == "no" ]] || [[ "$input" == "n" ]] || [[ "$input" == "No" ]] || [[ "$input" == "N" ]]; then
-        exit 0
-    elif [[ "$input" != "yes" ]] && [[ "$input" != "y" ]] && [[ "$input" != "Yes" ]] && [[ "$input" != "Y" ]]; then
-        echo "Input \"$input\" is invalid!"
-        exit 2
+# TODO: PACMAN vim git man-db reflector
+
+readonly BOLD='\e[1m'
+readonly RED='\e[91m'
+readonly BLUE='\e[34m'  
+readonly GREEN='\e[92m'
+readonly YELLOW='\e[93m'
+readonly RESET='\e[0m'
+
+readonly PERCENTAGE_BAR_LENGTH=100
+readonly PERCENTAGE_BAR_DIVIDER=2
+
+readonly DEFAULT_EFI_PARTITION_SIZE=1
+readonly DEFAULT_SWAP_PARTITION_SIZE=4
+readonly DEFAULT_ROOT_PARTITION_SIZE=0
+
+input=""
+print_info () {
+    local infos=("${@}")
+
+    for (( i=0; i<"${#}"; i++ ))
+    do
+        printf "${BOLD}${BLUE}%s${RESET}\n" "${infos[i]}"
+    done
+}
+
+read_input () {
+    local prompt="${1}"
+
+    printf "${BLUE}%s: ${RESET}" "${prompt}"
+    read input
+}
+
+print_warning () {
+    local msg="${1}"
+
+    printf "${BOLD}${YELLOW}%s${RESET}\n" "${msg}"
+}
+
+print_percentage() {
+    local percentage="${1}"
+    local action="${2}"
+
+    local bar="["
+    for (( i=0; i<"${percentage}" / "${PERCENTAGE_BAR_DIVIDER}"; i++ ))
+    do
+        bar="${bar}#"
+    done
+    for (( i=0; i<("${PERCENTAGE_BAR_LENGTH}" - "${percentage}") / "${PERCENTAGE_BAR_DIVIDER}"; i++ ))
+    do
+        bar="${bar}-"
+    done
+    bar="${bar}] (${percentage}%)"
+
+    printf "\r\e[2K"
+    printf "${GREEN}%s - %s${RESET}\r" "${bar}" "${action}"
+
+    if [[ "${percentage}" == 100 ]]; then
+        printf "\n"
     fi
 }
 
-echo -e "\nAre you sure you want to start arch installation?"
-confirm
+error_handler () {
+    printf "${BOLD}${RED}An error has occured on line: ${1}\nExit status: ${?}\nCheck \"$(basename ${0} .sh).out\" for more information.${RESET}\n"
+}
 
-echo ""
+set -e
+trap "error_handler $LINENO $?" ERR
+clear
+
+printf "${RED}
+ █████╗ ██████╗  ██████╗██╗  ██╗    ██╗███╗   ██╗███████╗████████╗ █████╗ ██╗     ██╗
+██╔══██╗██╔══██╗██╔════╝██║  ██║    ██║████╗  ██║██╔════╝╚══██╔══╝██╔══██╗██║     ██║
+███████║██████╔╝██║     ███████║    ██║██╔██╗ ██║███████╗   ██║   ███████║██║     ██║
+██╔══██║██╔══██╗██║     ██╔══██║    ██║██║╚██╗██║╚════██║   ██║   ██╔══██║██║     ██║
+██║  ██║██║  ██║╚██████╗██║  ██║    ██║██║ ╚████║███████║   ██║   ██║  ██║███████╗███████╗
+╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝    ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═╝╚══════╝╚══════╝
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                                                                               by SandorJJ
+${RESET}
+"
+
+while :
+do
+    print_info "Start Arch Linux installation?"
+    read_input "[y]es / [n]o"
+
+    if [[ "${input}" == "y" ]] || [[ "${input}" == "Y" ]] || [[ "${input}" == "yes" ]] || [[ "${input}" == "Yes" ]]; then
+        printf "\n"
+        break
+    elif [[ "${input}" == "n" ]] || [[ "${input}" == "N" ]] || [[ "${input}" == "no" ]] || [[ "${input}" == "No" ]]; then
+        exit 0
+    else
+        print_warning "Invalid input: \""${input}"\", try again!"
+        printf "\n"
+    fi
+done
+
 lsblk
+printf "\n"
 
-echo -e "\nWhat is the name of the disk you want to format and partition?"
-read disk
-
-efi=""
-while [[ ! "$efi" =~ [0-9]+ ]]; do
-    echo -e "\nHow many GiB should the EFI system partition be? (recommended 1 GiB)"
-    read efi
-
-    if [[ ! "$efi" =~ [0-9]+ ]]; then
-        echo -e "\"$efi\" is invalid! Try again."
+disk_name=""
+while :
+do
+    print_info "Which disk should Arch be installed on?" "WARNING: All data on the disk will be erased!"
+    read_input "disk name"
+    if [[ "${input}" =~ ^sd[a-z]$ ]] || [[ "${input}" =~ ^nvme[0-9]n[0-9]$ ]]; then
+        disk_name="${input}"
+        printf "\n"
+        break
+    else
+        print_warning "Invalid input: \""${input}"\", try again!"
+        printf "\n"
     fi
 done
 
-swap=""
-while [[ ! "$swap" =~ [0-9]+ ]]; do
-    echo -e "\nHow many GiB should the swap partition be? (recommended 4 GiB)"
-    read swap
+efi_size=""
+swap_size=""
+root_size=""
+while :
+do
+    print_info "How should the disk be partitioned?" "Default: " "EFI system partition    ${DEFAULT_EFI_PARTITION_SIZE} GiB" "swap partition          ${DEFAULT_SWAP_PARTITION_SIZE} GiB" "root partition          remaining GiB"
+    read_input "[enter] for default / [c]ustom"
+    if [[ "${input}" == "" ]]; then
+        efi_size="${DEFAULT_EFI_PARTITION_SIZE}"
+        swap_size="${DEFAULT_SWAP_PARTITION_SIZE}"
+        root_size="${DEFAULT_ROOT_PARTITION_SIZE}"
+        printf "\n"
+        break
+    elif [[ "${input}" == "c" ]] || [[ "${input}" == "C" ]] || [[ "${input}" == "custom" ]] || [[ "${input}" == "Custom" ]]; then 
+        printf "\n"
+        while :
+        do
+            print_info "How large should the EFI system partition be?" "Recommended 1 GiB (default)."
+            read_input "[enter] for default / partition size"
+            if [[ "${input}" =~ ^[1-9][0-9]*$ ]]; then 
+                efi_size="${input}"
+                printf "\n"
+                break
+            elif [[ "${input}" == "" ]]; then
+                efi_size="${DEFAULT_EFI_PARTITION_SIZE}"
+                printf "\n"
+                break
+            else
+                print_warning "Invalid input: \""${input}"\", try again!"
+                printf "\n"
+            fi
+        done
 
-    if [[ ! "$swap" =~ [0-9]+ ]]; then
-        echo -e "\""$swap"\" is invalid! Try again."
+        while :
+        do
+            print_info "How large should the swap partition be?" "Recommended 4 GiB (default)."
+            read_input "[enter] for default / partition size"
+            if [[ "${input}" =~ ^[1-9][0-9]*$ ]]; then
+                swap_size="${input}"
+                printf "\n"
+                break
+            elif [[ "${input}" == "" ]]; then
+                swap_size="${DEFAULT_SWAP_PARTITION_SIZE}"
+                printf "\n"
+                break
+            else
+                print_warning "Invalid input: \""${input}"\", try again!"
+                printf "\n"
+            fi
+        done
+
+        while :
+        do
+            print_info "How large should the root partition be?" "Recommended remainder GiB (default)."
+            read_input "[enter] for default / partition size"
+            if [[ "${input}" =~ ^[1-9][0-9]*$ ]]; then
+                root_size="${input}"
+                printf "\n"
+                break
+            elif [[ "${input}" == "" ]]; then
+                root_size="${DEFAULT_ROOT_PARTITION_SIZE}"
+                printf "\n"
+                break
+            else
+                print_warning "Invalid input: \""${input}"\", try again!"
+                printf "\n"
+            fi
+        done
+        break
+    else
+        print_warning "Invalid input: \""${input}"\", try again!"
+        printf "\n"
     fi
 done
 
-root=""
-while [[ ! "$root" =~ [0-9]+ ]]; do
-    echo -e "\nHow many GiB should the root partition be? (recommended remainder (0) GiB)"
-    read root
+device_name=""
+while :
+do
+    print_info "What should this device be called?"
+    read_input "device name"
 
-    if [[ ! "$root" =~ [0-9]+ ]]; then
-        echo -e "\""$root"\" is invalid! Try again."
+    if [[ "${input}" =~ ^([a-z0-9])([a-z0-9]|-){0,62}$ ]]; then
+        device_name="${input}"
+        printf "\n"
+        break
+    else
+        print_warning "Invalid input: \""${input}"\", try again!"
+        printf "\n"
     fi
 done
 
-echo -e "\nPartition layout:"
-echo -e "EFI system partition - $efi GiB"
-echo -e "swap partition - $swap GiB"
-echo -e "root partition - $root GiB"
-echo -e "Is the partition layout correct?"
-confirm
+root_password=""
+while :
+do
+    print_info "What should the root password be?"
+    read_input "root password"
+    password="${input}"
+    read_input "repeat"
+    repeat="${input}"
 
-echo -e "\nFormatting disk:"
-sgdisk /dev/"$disk" -o
-echo -e "\nCreating EFI system partition:"
-sgdisk /dev/"$disk" -n 0:0:+"$efi"GiB
-sgdisk /dev/"$disk" -t 1:EF00
-echo -e "\nCreating swap partition:"
-sgdisk /dev/"$disk" -n 0:0:+"$swap"GiB
-sgdisk /dev/"$disk" -t 2:8200
-echo -e "\nCreating root partition:"
-sgdisk /dev/"$disk" -n 0:0:+"$root"
+    if [[ "${password}" == "${repeat}" ]]; then
+        root_password="${password}"
+        printf "\n"
+        break
+    else
+        print_warning "Passwords (\""${password}"\", \""${repeat}"\") don't match, try again!"
+        printf "\n"
+    fi
+done
 
-echo ""
-lsblk
+print_info "What should the user be called?"
+read_input "user name"
+user_name="${input}"
 
-echo -e "\nWhat is the name of the EFI system partition?"
-read efi_name
-echo -e "\nWhat is the name of the swap partition?"
-read swap_name
-echo -e "\nWhat is the name of the root partition?"
-read root_name
+user_password=""
+while :
+do
+    print_info "What should the user password be?"
+    read_input "user password"
+    password="${input}"
+    read_input "repeat"
+    repeat="${input}"
 
-echo -e "\nFormatting EFI system partition:"
-mkfs.fat -F 32 /dev/"$efi_name"
-echo -e "\nFormatting swap partition:"
-mkswap /dev/"$swap_name"
-echo -e "\nFormatting root partition:"
-mkfs.ext4 /dev/"$root_name"
+    if [[ "${password}" == "${repeat}" ]]; then
+        user_password="${password}"
+        printf "\n"
+        break
+    else
+        print_warning "Passwords (\""${password}"\", \""${repeat}"\") don't match, try again!"
+        printf "\n"
+    fi
+done
 
-echo -e "\nMounting root partition:"
-mount /dev/"$root_name" /mnt
-echo -e "\nMounting EFI system partition:"
-mount --mkdir /dev/"$efi_name" /mnt/boot
-echo -e "\nEnabling swap partition:"
-swapon /dev/"$swap_name"
+print_percentage 10 "Formatting disk"
+sgdisk /dev/"${disk_name}" -o &> arch-install.out
 
-echo -e "\nCreating mirrorlist for downloads:"
-reflector --country Canada --latest 5 --protocol http,https --sort rate --save /etc/pacman.d/mirrorlist
+print_percentage 20 "Partitioning disk"
+sgdisk /dev/"${disk_name}" -n 0:0:+"${efi_size}"GiB &>> arch-install.out
+sgdisk /dev/"${disk_name}" -n 0:0:+"${swap_size}"GiB &>> arch-install.out
+if [[ "${root_size}" == 0 ]]; then
+    sgdisk /dev/"${disk_name}" -n 0:0:+"${root_size}" &>> arch-install.out
+else
+    sgdisk /dev/"${disk_name}" -n 0:0:+"${root_size}"GiB &>> arch-install.out
+fi
 
-echo -e "\nInstalling essential system packages:"
-pacstrap -K /mnt base linux linux-firmware 
-echo -e "\nInstalling important utility packages:"
-pacstrap -K /mnt vim git networkmanager nmtui amd-ucode man-db reflector
+print_percentage 25 "Changing disk type"
+sgdisk /dev/"${disk_name}" -t 1:EF00 &>> arch-install.out
+sgdisk /dev/"${disk_name}" -t 2:8200 &>> arch-install.out
 
-echo -e "\nGenerating fstab file:"
-genfstab -U /mnt >> /mnt/etc/fstab
-cat /mnt/etc/fstab
+efi_name=""
+swap_name=""
+root_name=""
+if [[ "${disk_name}" =~ ^sd[a-z]$ ]]; then
+    efi_name="${disk_name}1"
+    swap_name="${disk_name}2"
+    root_name="${disk_name}3"
 
-echo -e "\nWhat country are you in?"
-read country
-echo -e "\nWhat timezone are you in?"
-read timezone
+elif [[ "${disk_name}" =~ ^nvme[0-9]n[0-9]$ ]]; then
+    efi_name="${disk_name}p1"
+    swap_name="${disk_name}p2"
+    root_name="${disk_name}p3"
+fi
 
-echo -e "\nSetting time:"
-arch-chroot /mnt ln -sf /usr/share/zoneinfo/"$country"/"$timezone" /etc/localtime
-arch-chroot /mnt hwclock --systohc
+print_percentage 30 "Formatting partitions"
+mkfs.fat -F 32 /dev/"${efi_name}" &>> arch-install.out
+mkswap /dev/"${swap_name}" &>> arch-install.out
+mkfs.ext4 /dev/"${root_name}" &>> arch-install.out
 
-echo -e "\nSetting localization:"
-arch-chroot /mnt locale-gen
-arch-chroot /mnt sed -i "s/#en_CA/en_CA/g" /etc/locale.gen
-arch-chroot /mnt echo "LANG=en_CA.UTF-8" >> /etc/locale.conf
+print_percentage 40 "Mounting partitions"
+mount /dev/"${root_name}" /mnt &>> arch-install.out
+mount --mkdir /dev/"${efi_name}" /mnt/boot &>> arch-install.out
+swapon /dev/"${swap_name}" &>> arch-install.out
 
-echo -e "\nWhat should the device's hostname be?"
-read hostname
+print_percentage 50 "Creating mirrorlist"
+reflector --country Canada --latest 10 --protocol http,https --sort rate --save /etc/pacman.d/mirrorlist  &>> arch-install.out
 
-echo -e "\nSetting hostname:"
-arch-chroot /mnt echo "$hostname" >> /etc/hostname
+print_percentage 60 "Installing essential system packages (may take a while)"
+pacstrap -K /mnt base linux linux-firmware amd-ucode networkmanager sudo &>> arch-install.out
 
-echo -e "\nSet root password:"
-arch-chroot /mnt passwd
+print_percentage 75 "Generating fstab file"
+genfstab -U /mnt >> /mnt/etc/fstab &>> arch-install.out
 
-echo -e "\nSetting up bootloader (GRUB):"
-arch-chroot /mnt pacman -S grub efibootmgr
-arch-chroot /mnt grub-install --target=x86_64-efi --efi-directory=/boot/ --bootloader-id=GRUB
-arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
+print_percentage 80 "Setting time and localization"
+arch-chroot /mnt ln -sf /usr/share/zoneinfo/"$(curl -s http://ip-api.com/line?fields=timezone)" /etc/localtime &>> arch-install.out
+arch-chroot /mnt hwclock --systohc &>> arch-install.out
 
-umount -R /mnt
+arch-chroot /mnt locale-gen &>> arch-install.out
+arch-chroot /mnt sed -i "s/#en_CA/en_CA/g" /etc/locale.gen &>> arch-install.out
+arch-chroot /mnt echo "LANG=en_CA.UTF-8" >> /etc/locale.conf &>> arch-install.out
 
-echo -e "\nReady to reboot (pull out USB)!"
+print_percentage 85 "Setting device name, root password, and generating user"
+arch-chroot /mnt echo "${device_name}" >> /etc/hostname &>> arch-install.out
+echo "root:${root_password}" | arch-chroot /mnt chpasswd &>> arch-install.out
+arch-chroot /mnt useradd -m -G wheel "${user_name}" &>> arch-install.out
+echo "${user_name}:${user_password}" | arch-chroot /mnt chpasswd &>> arch-install.out
+
+print_percentage 87 "Changing wheel group sudo permissions"
+arch-chroot /mnt sed -i "s/# %wheel ALL(ALL:ALL) ALL/%wheel ALL(ALL:ALL) ALL/g" /etc/sudoers &>> arch-install.out
+
+print_percentage 91 "Enabling networkmanager"
+arch-chroot /mnt systemctl enable NetworkManager &>> arch-install.out
+
+print_percentage 90 "Installing and setting up bootloader"
+arch-chroot /mnt pacman -S --noconfirm grub efibootmgr &>> arch-install.out
+arch-chroot /mnt grub-install --target=x86_64-efi --efi-directory=/boot/ --bootloader-id=GRUB &>> arch-install.out
+arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg &>> arch-install.out
+
+print_percentage 95 "Unmounting partitions"
+umount -R /mnt &>> arch-install.out
+
+print_percentage 100 "Arch installation complete (reboot and remove ISO)"
+printf "\n"

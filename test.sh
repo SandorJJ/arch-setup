@@ -24,9 +24,9 @@ input=""
 print_info () {
     local infos=("${@}")
 
-    for info in "${infos}"
+    for (( i=0; i<${#}; i++ ))
     do
-        printf "${BOLD}${BLUE}%s${RESET}\n" "${info}"
+        printf "${BOLD}${BLUE}%s${RESET}\n" "${infos[i]}"
     done
 }
 

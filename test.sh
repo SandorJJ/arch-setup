@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
-clear
-set -e
 
 # TODO: SUDO PERMISSION
 # TODO: ENCRYPTION
-# TODO: ERROR HANDLING
+# TODO: PACMAN vim git man-db reflector
 
 readonly BOLD='\e[1m'
 readonly RED='\e[91m'
@@ -21,7 +19,6 @@ readonly DEFAULT_SWAP_PARTITION_SIZE=4
 readonly DEFAULT_ROOT_PARTITION_SIZE=0
 
 input=""
-
 print_info () {
     local infos=("${@}")
 
@@ -65,6 +62,14 @@ print_percentage() {
         printf "\n"
     fi
 }
+
+error_handler () {
+    printf "${BOLD}${RED}An error has occured on line: ${1}\nExit status: ${?}\nCheck \"$(basename ${0} .sh).out\" for more information.${RESET}"
+}
+
+set -e
+trap "error_handler $LINENO $?" ERR
+clear
 
 printf "${RED}
  █████╗ ██████╗  ██████╗██╗  ██╗    ██╗███╗   ██╗███████╗████████╗ █████╗ ██╗     ██╗
@@ -289,10 +294,7 @@ print_percentage 50 "Creating mirrorlist"
 reflector --country Canada --latest 10 --protocol http,https --sort rate --save /etc/pacman.d/mirrorlist 
 
 print_percentage 60 "Installing essential system packages (may take a while)"
-pacstrap -K /mnt base linux linux-firmware amd-ucode
-
-print_percentage 70 "Installing important utility packages"
-pacstrap -K /mnt vim git networkmanager nmtui man-db reflector
+pacstrap -K /mnt base linux linux-firmware networkmanager amd-ucode
 
 print_percentage 75 "Generating fstab file"
 genfstab -U /mnt >> /mnt/etc/fstab

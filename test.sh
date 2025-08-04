@@ -24,7 +24,7 @@ input=""
 print_info () {
     local infos=("${@}")
 
-    for (( i=0; i<${#}; i++ ))
+    for (( i=0; i<"${#}"; i++ ))
     do
         printf "${BOLD}${BLUE}%s${RESET}\n" "${infos[i]}"
     done
@@ -207,9 +207,9 @@ while :
 do
     print_info "What should the root password be?"
     read_input "root password"
-    local password="${input}"
+    password="${input}"
     read_input "repeat"
-    local repeat="${input}"
+    repeat="${input}"
 
     if [[ "${password}" == "${repeat}" ]]; then
         root_password="${password}"
@@ -230,9 +230,9 @@ while :
 do
     print_info "What should the user password be?"
     read_input "user password"
-    local password="${input}"
+    password="${input}"
     read_input "repeat"
-    local repeat="${input}"
+    repeat="${input}"
 
     if [[ "${password}" == "${repeat}" ]]; then
         user_password="${password}"
@@ -306,9 +306,9 @@ arch-chroot /mnt echo "LANG=en_CA.UTF-8" >> /etc/locale.conf
 
 print_percentage 85 "Setting device name, root password, and generating user"
 arch-chroot /mnt echo "${device_name}" >> /etc/hostname
-arch-chroot /mnt (echo "${root_password}" ; echo "${root_password}") | passwd
+arch-chroot /mnt printf "${root_password}\n${root_password}" | passwd
 arch-chroot /mnt useradd -m -G wheel "${user_name}"
-arch-chroot /mnt (echo "${user_password}" ; echo "${user_password}") | passwd
+arch-chroot /mnt printf "${user_password}\n${user_password}" | passwd
 
 print_percentage 91 "Enabling networkmanager"
 arch-chroot /mnt systemctl enable NetworkManager

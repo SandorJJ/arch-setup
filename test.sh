@@ -52,10 +52,11 @@ print_percentage() {
     done
     for (( i=0; i<("${PERCENTAGE_BAR_LENGTH}" - "${percentage}") / "${PERCENTAGE_BAR_DIVIDER}"; i++ ))
     do
-        bar="${bar} "
+        bar="${bar}-"
     done
     bar="${bar}] (${percentage}%)"
 
+    printf "\r\2[2K"
     printf "${GREEN}%s - %s${RESET}\r" "${bar}" "${action}"
 
     if [[ "${percentage}" == 100 ]]; then
@@ -64,7 +65,7 @@ print_percentage() {
 }
 
 error_handler () {
-    printf "${BOLD}${RED}An error has occured on line: ${1}\nExit status: ${?}\nCheck \"$(basename ${0} .sh).out\" for more information.${RESET}"
+    printf "${BOLD}${RED}An error has occured on line: ${1}\nExit status: ${?}\nCheck \"$(basename ${0} .sh).out\" for more information.${RESET}\n"
 }
 
 set -e
@@ -317,7 +318,7 @@ print_percentage 91 "Enabling networkmanager"
 arch-chroot /mnt systemctl enable NetworkManager &>> test.out
 
 print_percentage 90 "Installing and setting up bootloader"
-arch-chroot /mnt pacman -S grub efibootmgr &>> test.out
+arch-chroot /mnt pacman -S --noconfirm grub efibootmgr &>> test.out
 arch-chroot /mnt grub-install --target=x86_64-efi --efi-directory=/boot/ --bootloader-id=GRUB &>> test.out
 arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg &>> test.out
 

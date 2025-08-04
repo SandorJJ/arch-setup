@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 clear
 
+# TODO: SUDO PERMISSION
+# TODO: ENCRYPTION
+# TODO: ERROR HANDLING
+
 readonly BOLD='\e[1m'
 readonly RED='\e[91m'
 readonly BLUE='\e[34m'  
@@ -20,9 +24,9 @@ input=""
 print_info () {
     local infos=("${@}")
 
-    for (( i=0; i<${#}; i++ ))
+    for info in "${infos}"
     do
-        printf "${BOLD}${BLUE}%s${RESET}\n" "${infos[i]}"
+        printf "${BOLD}${BLUE}%s${RESET}\n" "${info}"
     done
 }
 
@@ -217,6 +221,29 @@ do
     fi
 done
 
+print_info "What should the user be called?"
+read_input "user name"
+user_name="${input}"
+
+user_password=""
+while :
+do
+    print_info "What should the user password be?"
+    read_input "user password"
+    local password="${input}"
+    read_input "repeat"
+    local repeat="${input}"
+
+    if [[ "${password}" == "${repeat}" ]]; then
+        user_password="${password}"
+        printf "\n"
+        break
+    else
+        print_warning "Passwords (\""${password}"\", \""${repeat}"\") don't match, try again!"
+        printf "\n"
+    fi
+done
+
 print_percentage 10 "Formatting disk"
 sgdisk /dev/"${disk_name}" -o
 
@@ -280,6 +307,11 @@ arch-chroot /mnt echo "LANG=en_CA.UTF-8" >> /etc/locale.conf
 print_percentage 85 "Setting device name, root password, and generating user"
 arch-chroot /mnt echo "${device_name}" >> /etc/hostname
 arch-chroot /mnt (echo "${root_password}" ; echo "${root_password}") | passwd
+arch-chroot /mnt useradd -m -G wheel "${user_name}"
+arch-chroot /mnt (echo "${user_password}" ; echo "${user_password}") | passwd
+
+print_percentage 91 "Enabling networkmanager"
+arch-chroot /mnt systemctl enable NetworkManager
 
 print_percentage 90 "Installing and setting up bootloader"
 arch-chroot /mnt pacman -S grub efibootmgr

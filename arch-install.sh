@@ -302,7 +302,7 @@ arch-chroot /mnt ln -sf /usr/share/zoneinfo/"$(curl -s http://ip-api.com/line?fi
 arch-chroot /mnt hwclock --systohc &>> arch-install.out
 
 arch-chroot /mnt locale-gen &>> arch-install.out
-arch-chroot /mnt sed -i "s/#en_CA/en_CA/g" /mnt/etc/locale.gen &>> arch-install.out
+arch-chroot /mnt sed -i "s/#en_CA/en_CA/g" /etc/locale.gen &>> arch-install.out
 arch-chroot /mnt echo "LANG=en_CA.UTF-8" > /mnt/etc/locale.conf &>> arch-install.out
 
 print_percentage 70 "Setting device name, root password, and generating user"

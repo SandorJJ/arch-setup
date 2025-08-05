@@ -302,17 +302,17 @@ arch-chroot /mnt ln -sf /usr/share/zoneinfo/"$(curl -s http://ip-api.com/line?fi
 arch-chroot /mnt hwclock --systohc 
 
 arch-chroot /mnt locale-gen 
-arch-chroot /mnt sed -i "s/#en_CA/en_CA/g" /etc/locale.gen 
-arch-chroot /mnt echo "LANG=en_CA.UTF-8" >> /etc/locale.conf 
+sed -i "s/#en_CA/en_CA/g" /mnt/etc/locale.gen 
+echo "LANG=en_CA.UTF-8" > /mnt/etc/locale.conf 
 
 print_percentage 70 "Setting device name, root password, and generating user"
-arch-chroot /mnt echo "${device_name}" >> /etc/hostname 
+echo "${device_name}" > /mnt/etc/hostname 
 echo "root:${root_password}" | arch-chroot /mnt chpasswd 
 arch-chroot /mnt useradd -m -G wheel "${user_name}" 
 echo "${user_name}:${user_password}" | arch-chroot /mnt chpasswd 
 
 print_percentage 75 "Changing wheel group sudo permissions"
-arch-chroot /mnt echo "%wheel ALL(ALL:ALL) ALL" >> /etc/sudoers.d/00_wheel 
+echo "%wheel ALL=(ALL:ALL) ALL" > /mnt/etc/sudoers.d/00_wheel 
 
 print_percentage 80 "Enabling networkmanager"
 arch-chroot /mnt systemctl enable NetworkManager 

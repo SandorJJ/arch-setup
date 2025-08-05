@@ -298,21 +298,21 @@ print_percentage 60 "Generating fstab file"
 genfstab -U /mnt > /mnt/etc/fstab &>> arch-install.out
 
 print_percentage 65 "Setting time and localization"
-arch-chroot /mnt ln -sf /usr/share/zoneinfo/"$(curl -s http://ip-api.com/line?fields=timezone)" /etc/localtime &>> arch-install.out
+arch-chroot /mnt ln -sf /usr/share/zoneinfo/"$(curl -s http://ip-api.com/line?fields=timezone)" /mnt/etc/localtime &>> arch-install.out
 arch-chroot /mnt hwclock --systohc &>> arch-install.out
 
 arch-chroot /mnt locale-gen &>> arch-install.out
-arch-chroot /mnt sed -i "s/#en_CA/en_CA/g" /etc/locale.gen &>> arch-install.out
-arch-chroot /mnt echo "LANG=en_CA.UTF-8" > /etc/locale.conf &>> arch-install.out
+arch-chroot /mnt sed -i "s/#en_CA/en_CA/g" /mnt/etc/locale.gen &>> arch-install.out
+arch-chroot /mnt echo "LANG=en_CA.UTF-8" > /mnt/etc/locale.conf &>> arch-install.out
 
 print_percentage 70 "Setting device name, root password, and generating user"
-arch-chroot /mnt echo "${device_name}" > /etc/hostname &>> arch-install.out
+arch-chroot /mnt echo "${device_name}" > /mnt/etc/hostname &>> arch-install.out
 echo "root:${root_password}" | arch-chroot /mnt chpasswd &>> arch-install.out
 arch-chroot /mnt useradd -m -G wheel "${user_name}" &>> arch-install.out
 echo "${user_name}:${user_password}" | arch-chroot /mnt chpasswd &>> arch-install.out
 
 print_percentage 75 "Changing wheel group sudo permissions"
-arch-chroot /mnt echo "%wheel ALL(ALL:ALL) ALL" > /etc/sudoers.d/00_wheel &>> arch-install.out
+arch-chroot /mnt echo "%wheel ALL(ALL:ALL) ALL" > /mnt/etc/sudoers.d/00_wheel &>> arch-install.out
 
 print_percentage 80 "Enabling networkmanager"
 arch-chroot /mnt systemctl enable NetworkManager &>> arch-install.out

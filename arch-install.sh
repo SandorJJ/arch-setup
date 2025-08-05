@@ -62,11 +62,11 @@ print_percentage() {
 }
 
 error_handler () {
-    printf "${BOLD}${RED}An error has occured on line: ${1}\nExit status: ${?}\nCheck \"$(basename ${0} .sh).out\" for more information.${RESET}\n"
+    printf "${BOLD}${RED}An error has occured on line!\nCheck \"$(basename ${0} .sh).out\" for more information.${RESET}\n"
 }
 
 set -e
-trap "error_handler $LINENO $?" ERR
+trap "error_handler" ERR
 clear
 
 printf "${RED}
@@ -298,7 +298,7 @@ print_percentage 60 "Generating fstab file"
 genfstab -U /mnt > /mnt/etc/fstab &>> arch-install.out
 
 print_percentage 65 "Setting time and localization"
-arch-chroot /mnt ln -sf /usr/share/zoneinfo/"$(curl -s http://ip-api.com/line?fields=timezone)" /mnt/etc/localtime &>> arch-install.out
+arch-chroot /mnt ln -sf /usr/share/zoneinfo/"$(curl -s http://ip-api.com/line?fields=timezone)" /etc/localtime &>> arch-install.out
 arch-chroot /mnt hwclock --systohc &>> arch-install.out
 
 arch-chroot /mnt locale-gen &>> arch-install.out

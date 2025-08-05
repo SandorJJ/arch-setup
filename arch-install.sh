@@ -252,17 +252,17 @@ print_percentage 0 "Formatting disk"
 sgdisk /dev/"${disk_name}" -o &> arch-install.out
 
 print_percentage 5 "Partitioning disk"
-sgdisk /dev/"${disk_name}" -n 0:0:+"${efi_size}"GiB &>> arch-install.out
-sgdisk /dev/"${disk_name}" -n 0:0:+"${swap_size}"GiB &>> arch-install.out
+sgdisk /dev/"${disk_name}" -n 0:0:+"${efi_size}"GiB 
+sgdisk /dev/"${disk_name}" -n 0:0:+"${swap_size}"GiB 
 if [[ "${root_size}" == 0 ]]; then
-    sgdisk /dev/"${disk_name}" -n 0:0:+"${root_size}" &>> arch-install.out
+    sgdisk /dev/"${disk_name}" -n 0:0:+"${root_size}" 
 else
-    sgdisk /dev/"${disk_name}" -n 0:0:+"${root_size}"GiB &>> arch-install.out
+    sgdisk /dev/"${disk_name}" -n 0:0:+"${root_size}"GiB 
 fi
 
 print_percentage 10 "Changing disk type"
-sgdisk /dev/"${disk_name}" -t 1:EF00 &>> arch-install.out
-sgdisk /dev/"${disk_name}" -t 2:8200 &>> arch-install.out
+sgdisk /dev/"${disk_name}" -t 1:EF00 
+sgdisk /dev/"${disk_name}" -t 2:8200 
 
 efi_name=""
 swap_name=""
@@ -279,51 +279,51 @@ elif [[ "${disk_name}" =~ ^nvme[0-9]n[0-9]$ ]]; then
 fi
 
 print_percentage 15 "Formatting partitions"
-mkfs.fat -F 32 /dev/"${efi_name}" &>> arch-install.out
-mkswap /dev/"${swap_name}" &>> arch-install.out
-mkfs.ext4 /dev/"${root_name}" &>> arch-install.out
+mkfs.fat -F 32 /dev/"${efi_name}" 
+mkswap /dev/"${swap_name}" 
+mkfs.ext4 /dev/"${root_name}" 
 
 print_percentage 20 "Mounting partitions"
-mount /dev/"${root_name}" /mnt &>> arch-install.out
-mount --mkdir /dev/"${efi_name}" /mnt/boot &>> arch-install.out
-swapon /dev/"${swap_name}" &>> arch-install.out
+mount /dev/"${root_name}" /mnt 
+mount --mkdir /dev/"${efi_name}" /mnt/boot 
+swapon /dev/"${swap_name}" 
 
 print_percentage 25 "Creating mirrorlist"
-reflector --country Canada --latest 10 --protocol http,https --sort rate --save /etc/pacman.d/mirrorlist  &>> arch-install.out
+reflector --country Canada --latest 10 --protocol http,https --sort rate --save /etc/pacman.d/mirrorlist  
 
 print_percentage 40 "Installing essential system packages (may take a while)"
-pacstrap -K /mnt base linux linux-firmware amd-ucode networkmanager sudo &>> arch-install.out
+pacstrap -K /mnt base linux linux-firmware amd-ucode networkmanager sudo 
 
 print_percentage 60 "Generating fstab file"
-genfstab -U /mnt > /mnt/etc/fstab &>> arch-install.out
+genfstab -U /mnt >> /mnt/etc/fstab 
 
 print_percentage 65 "Setting time and localization"
-arch-chroot /mnt ln -sf /usr/share/zoneinfo/"$(curl -s http://ip-api.com/line?fields=timezone)" /etc/localtime &>> arch-install.out
-arch-chroot /mnt hwclock --systohc &>> arch-install.out
+arch-chroot /mnt ln -sf /usr/share/zoneinfo/"$(curl -s http://ip-api.com/line?fields=timezone)" /etc/localtime 
+arch-chroot /mnt hwclock --systohc 
 
-arch-chroot /mnt locale-gen &>> arch-install.out
-arch-chroot /mnt sed -i "s/#en_CA/en_CA/g" /etc/locale.gen &>> arch-install.out
-arch-chroot /mnt echo "LANG=en_CA.UTF-8" > /mnt/etc/locale.conf &>> arch-install.out
+arch-chroot /mnt locale-gen 
+arch-chroot /mnt sed -i "s/#en_CA/en_CA/g" /etc/locale.gen 
+arch-chroot /mnt echo "LANG=en_CA.UTF-8" >> /etc/locale.conf 
 
 print_percentage 70 "Setting device name, root password, and generating user"
-arch-chroot /mnt echo "${device_name}" > /mnt/etc/hostname &>> arch-install.out
-echo "root:${root_password}" | arch-chroot /mnt chpasswd &>> arch-install.out
-arch-chroot /mnt useradd -m -G wheel "${user_name}" &>> arch-install.out
-echo "${user_name}:${user_password}" | arch-chroot /mnt chpasswd &>> arch-install.out
+arch-chroot /mnt echo "${device_name}" >> /etc/hostname 
+echo "root:${root_password}" | arch-chroot /mnt chpasswd 
+arch-chroot /mnt useradd -m -G wheel "${user_name}" 
+echo "${user_name}:${user_password}" | arch-chroot /mnt chpasswd 
 
 print_percentage 75 "Changing wheel group sudo permissions"
-arch-chroot /mnt echo "%wheel ALL(ALL:ALL) ALL" > /mnt/etc/sudoers.d/00_wheel &>> arch-install.out
+arch-chroot /mnt echo "%wheel ALL(ALL:ALL) ALL" >> /etc/sudoers.d/00_wheel 
 
 print_percentage 80 "Enabling networkmanager"
-arch-chroot /mnt systemctl enable NetworkManager &>> arch-install.out
+arch-chroot /mnt systemctl enable NetworkManager 
 
 print_percentage 85 "Installing and setting up bootloader"
-arch-chroot /mnt pacman -S --noconfirm grub efibootmgr &>> arch-install.out
-arch-chroot /mnt grub-install --target=x86_64-efi --efi-directory=/boot/ --bootloader-id=GRUB &>> arch-install.out
-arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg &>> arch-install.out
+arch-chroot /mnt pacman -S --noconfirm grub efibootmgr 
+arch-chroot /mnt grub-install --target=x86_64-efi --efi-directory=/boot/ --bootloader-id=GRUB 
+arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg 
 
 print_percentage 95 "Unmounting partitions"
-umount -R /mnt &>> arch-install.out
+umount -R /mnt 
 
 print_percentage 100 "Arch installation complete (reboot and remove ISO)"
 printf "\n"

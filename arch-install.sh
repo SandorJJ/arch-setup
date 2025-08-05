@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-# TODO: PACMAN vim git man-db reflector
-
 readonly BOLD='\e[1m'
 readonly RED='\e[91m'
 readonly BLUE='\e[34m'  
@@ -17,6 +15,7 @@ readonly DEFAULT_SWAP_PARTITION_SIZE=4
 readonly DEFAULT_ROOT_PARTITION_SIZE=0
 
 input=""
+
 print_info () {
     local infos=("${@}")
 

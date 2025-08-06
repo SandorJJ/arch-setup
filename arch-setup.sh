@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env -S bash -e
 
 readonly BOLD='\e[1m'
 readonly RED='\e[91m'
@@ -61,7 +61,6 @@ error_handler () {
     printf "${BOLD}${RED}An error has occured on line: ${1}\nExit status: ${?}\nCheck \"$(basename ${0} .sh).out\" for more information.${RESET}\n"
 }
 
-set -e
 trap "error_handler $LINENO $?" ERR
 clear
 
@@ -95,4 +94,3 @@ done
 
 print_percentage 0 "Installing vital utility packages"
 pacman vim git man-db man-pages reflector
-# TODO: PACMAN vim git man-db reflector

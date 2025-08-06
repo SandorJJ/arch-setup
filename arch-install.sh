@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env -S bash -e
 
 readonly BOLD='\e[1m'
 readonly RED='\e[91m'
@@ -65,7 +65,6 @@ error_handler () {
     printf "${BOLD}${RED}An error has occured on line!\nCheck \"$(basename ${0} .sh).out\" for more information.${RESET}\n"
 }
 
-set -e
 trap "error_handler" ERR
 clear
 
@@ -301,9 +300,9 @@ print_percentage 65 "Setting time and localization"
 arch-chroot /mnt ln -sf /usr/share/zoneinfo/"$(curl -s http://ip-api.com/line?fields=timezone)" /etc/localtime 
 arch-chroot /mnt hwclock --systohc 
 
-arch-chroot /mnt locale-gen 
 sed -i "s/#en_CA/en_CA/g" /mnt/etc/locale.gen 
 echo "LANG=en_CA.UTF-8" > /mnt/etc/locale.conf 
+arch-chroot /mnt locale-gen 
 
 print_percentage 70 "Setting device name, root password, and generating user"
 echo "${device_name}" > /mnt/etc/hostname 

@@ -321,11 +321,11 @@ arch-chroot /mnt pacman -S --noconfirm grub efibootmgr
 arch-chroot /mnt grub-install --target=x86_64-efi --efi-directory=/boot/ --bootloader-id=GRUB 
 arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg 
 
-print_percentage 95 "Downloading Arch setup script"
+print_percentage 95 "Downloading Arch setup script to Arch installation"
 cd /mnt/home/"${user_name}"
 curl -LO https://github.com/SandorJJ/arch-setup/raw/refs/heads/main/arch-setup.sh
-chown "${user_name}":"${user_name}" arch-setup.sh
 cd
+arch-chroot /mnt chown "${user_name}":"${user_name}" /home/"${user_name}"/arch-setup.sh
 
 print_percentage 98 "Unmounting partitions"
 umount -R /mnt

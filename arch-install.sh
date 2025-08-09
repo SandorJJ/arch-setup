@@ -311,7 +311,7 @@ arch-chroot /mnt useradd -m -G wheel "${user_name}"
 echo "${user_name}:${user_password}" | arch-chroot /mnt chpasswd 
 
 print_percentage 75 "Changing wheel group sudo permissions"
-echo "%wheel ALL=(ALL) NOPASSWD: /usr/bin/pacman" > /mnt/etc/sudoers.d/00_wheel 
+echo "%wheel ALL=(ALL:ALL) ALL" > /mnt/etc/sudoers.d/00_wheel 
 
 print_percentage 80 "Enabling networkmanager"
 arch-chroot /mnt systemctl enable NetworkManager 

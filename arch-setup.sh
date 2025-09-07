@@ -106,7 +106,7 @@ echo "${password}" | sudo -S pacman -S --noconfirm --needed ${utility_packages}
 print_percentage 10 "Installing yay"
 git clone https://aur.archlinux.org/yay.git
 cd yay/
-makepkg -si
+echo "${password}" | sudo -S makepkg -si --noconfirm --needed
 cd
 rm -rf yay/
 

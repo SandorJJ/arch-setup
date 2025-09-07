@@ -326,7 +326,7 @@ arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg &>> arch-install.out
 
 print_percentage 95 "Downloading Arch setup script to Arch installation"
 cd /mnt/home/"${user_name}"
-curl -LO https://github.com/SandorJJ/arch-setup/raw/refs/heads/main/arch-setup.sh &>> arch-install.out
+curl -LO https://github.com/SandorJJ/arch-setup/raw/refs/heads/main/arch-setup.sh &>> ~/arch-install.out
 cd
 arch-chroot /mnt chown "${user_name}":"${user_name}" /home/"${user_name}"/arch-setup.sh
 

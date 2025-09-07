@@ -278,9 +278,9 @@ elif [[ "${disk_name}" =~ ^nvme[0-9]n[0-9]$ ]]; then
 fi
 
 print_percentage 15 "Formatting partitions"
-mkfs.fat -F 32 /dev/"${efi_name}"
-mkswap /dev/"${swap_name}"
-mkfs.ext4 /dev/"${root_name}"
+mkfs.fat -F 32 /dev/"${efi_name}" &>> arch-install.out
+mkswap /dev/"${swap_name}" &>> arch-install.out
+mkfs.ext4 /dev/"${root_name}" &>> arch-install.out
 
 print_percentage 20 "Mounting partitions"
 mount /dev/"${root_name}" /mnt
@@ -301,7 +301,7 @@ arch-chroot /mnt ln -sf /usr/share/zoneinfo/"$(curl -s http://ip-api.com/line?fi
 arch-chroot /mnt hwclock --systohc
 sed -i "s/#en_CA/en_CA/g" /mnt/etc/locale.gen
 echo "LANG=en_CA.UTF-8" > /mnt/etc/locale.conf
-arch-chroot /mnt locale-gen
+arch-chroot /mnt locale-gen &>> arch-install.out
 
 print_percentage 70 "Setting device name, root password, and generating user"
 echo "${device_name}" > /mnt/etc/hostname

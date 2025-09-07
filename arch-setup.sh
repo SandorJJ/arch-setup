@@ -10,29 +10,29 @@ readonly RESET='\e[0m'
 readonly PERCENTAGE_BAR_LENGTH=100
 readonly PERCENTAGE_BAR_DIVIDER=2
 
-# input=""
+input=""
 
-# print_info () {
-#     local infos=("${@}")
-#
-#     for (( i=0; i<"${#}"; i++ ))
-#     do
-#         printf "${BOLD}${BLUE}%s${RESET}\n" "${infos[i]}"
-#     done
-# }
+print_info () {
+    local infos=("${@}")
 
-# read_input () {
-#     local prompt="${1}"
-#
-#     printf "${BLUE}%s: ${RESET}" "${prompt}"
-#     read input
-# }
+    for (( i=0; i<"${#}"; i++ ))
+    do
+        printf "${BOLD}${BLUE}%s${RESET}\n" "${infos[i]}"
+    done
+}
 
-# print_warning () {
-#     local msg="${1}"
-#
-#     printf "${BOLD}${YELLOW}%s${RESET}\n" "${msg}"
-# }
+read_input () {
+    local prompt="${1}"
+
+    printf "${BLUE}%s: ${RESET}" "${prompt}"
+    read input
+}
+
+print_warning () {
+    local msg="${1}"
+
+    printf "${BOLD}${YELLOW}%s${RESET}\n" "${msg}"
+}
 
 print_percentage() {
     local percentage="${1}"
@@ -58,10 +58,10 @@ print_percentage() {
 }
 
 error_handler () {
-    printf "${BOLD}${RED}An error has occured on line: ${1}\nExit status: ${?}\nCheck \"$(basename ${0} .sh).out\" for more information.${RESET}\n"
+    printf "${BOLD}${RED}An error has occured on line!\nCheck \"$(basename ${0} .sh).out\" for more information.${RESET}\n"
 }
 
-trap "error_handler $LINENO $?" ERR
+trap "error_handler" ERR
 clear
 
 printf "${RED}
@@ -92,5 +92,20 @@ do
     fi
 done
 
-print_percentage 0 "Installing vital utility packages"
-pacman vim git man-db man-pages reflector
+print_percentage 0 "Updating packages"
+sudo pacman -Syu
+
+utility_packages="vim git reflector"
+print_percentage 5 "Installing utility packages (${utility_packages})"
+sudo pacman -S --noconfim --needed "${utility_packages}"
+
+print_percentage 10 "Installing yay"
+git clone https://aur.archlinux.org/yay.git
+cd yay/
+makepkg -si
+cd
+rm -rf yay/
+
+documentation_packages="man-db man-pages tldr"
+print_percentage 15 "Installing documentation packages (${documentation_packages})"
+sudo pacman -S --noconfim --needed "${documentation_packages}"

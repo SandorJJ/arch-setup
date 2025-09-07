@@ -292,7 +292,7 @@ mount --mkdir /dev/"${efi_name}" /mnt/boot
 swapon /dev/"${swap_name}"
 
 print_percentage 25 "Creating mirrorlist"
-reflector --country Canada --latest 10 --protocol http,https --sort rate --save /etc/pacman.d/mirrorlist  
+reflector --country Canada --latest 10 --protocol http,https --sort rate --save /etc/pacman.d/mirrorlist &>> arch-install.out
 
 print_percentage 40 "Installing essential system packages (may take a while)"
 pacstrap -K /mnt base linux linux-firmware amd-ucode networkmanager sudo &>> arch-install.out

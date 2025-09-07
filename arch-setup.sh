@@ -92,12 +92,16 @@ do
     fi
 done
 
+print_info "Enter user password for sudo."
+read_input "user password"
+password="${input}"
+
 print_percentage 0 "Updating packages"
-sudo pacman -Syu
+sudo -S "${password}" pacman -Syu
 
 utility_packages="vim git reflector"
 print_percentage 5 "Installing utility packages (${utility_packages})"
-sudo pacman -S --noconfirm --needed ${utility_packages}
+sudo -S "${password}" pacman -S --noconfirm --needed ${utility_packages}
 
 print_percentage 10 "Installing yay"
 git clone https://aur.archlinux.org/yay.git
@@ -108,4 +112,4 @@ rm -rf yay/
 
 documentation_packages="man-db man-pages tldr"
 print_percentage 15 "Installing documentation packages (${documentation_packages})"
-sudo pacman -S --noconfirm --needed ${documentation_packages}
+sudo -S "${password}"  pacman -S --noconfirm --needed ${documentation_packages}

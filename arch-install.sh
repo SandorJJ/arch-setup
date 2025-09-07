@@ -51,7 +51,11 @@ print_percentage() {
     do
         bar="${bar}-"
     done
-    bar="${bar}] (${percentage}%)"
+    if [[ "${percentage}" % 2 == 0 ]]; then
+        bar="${bar}] (${percentage}%)"
+    else 
+        bar="${bar}-] (${percentage}%)"
+    fi
 
     printf "\r\e[2K"
     printf "${GREEN}%s - %s${RESET}\r" "${bar}" "${action}"
@@ -330,4 +334,3 @@ print_percentage 98 "Unmounting partitions"
 umount -R /mnt
 
 print_percentage 100 "Arch installation complete (reboot and remove ISO)"
-printf "\n"

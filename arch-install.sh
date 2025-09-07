@@ -51,7 +51,7 @@ print_percentage() {
     do
         bar="${bar}-"
     done
-    if [[ "${percentage}" % 2 == 0 ]]; then
+    if [[ $(("${percentage}" % 2)) == 0 ]]; then
         bar="${bar}] (${percentage}%)"
     else 
         bar="${bar}-] (${percentage}%)"
